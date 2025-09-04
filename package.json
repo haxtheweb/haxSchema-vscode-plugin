@@ -1,0 +1,103 @@
+{
+  "name": "haxschema",
+  "displayName": "HAXSchema Language Support",
+  "description": "Language support, validation, and autocomplete for HAXSchema .haxProperties.json files",
+  "version": "1.0.0",
+  "publisher": "haxtheweb",
+  "icon": "images/hax-icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/haxtheweb/haxSchema-vscode-plugin.git"
+  },
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Snippets"
+  ],
+  "keywords": [
+    "hax",
+    "haxschema",
+    "webcomponents",
+    "json",
+    "schema",
+    "validation"
+  ],
+  "activationEvents": [
+    "onLanguage:haxschema",
+    "workspaceContains:**/*.haxProperties.json"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "haxschema",
+        "aliases": [
+          "HAXSchema",
+          "haxschema"
+        ],
+        "extensions": [
+          ".haxProperties.json"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "haxschema",
+        "scopeName": "source.haxschema",
+        "path": "./syntaxes/haxschema.tmLanguage.json"
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": "*.haxProperties.json",
+        "url": "./schemas/haxschema.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "haxschema",
+        "path": "./snippets/haxschema.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "haxschema.validateFile",
+        "title": "Validate HAXSchema File",
+        "category": "HAXSchema"
+      },
+      {
+        "command": "haxschema.createDemo",
+        "title": "Create Demo Schema",
+        "category": "HAXSchema"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.60.0",
+    "@typescript-eslint/eslint-plugin": "^5.31.0",
+    "@typescript-eslint/parser": "^5.31.0",
+    "@vscode/test-electron": "^2.5.2",
+    "eslint": "^8.20.0",
+    "glob": "^11.0.3",
+    "mocha": "^11.7.2",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "ajv": "^8.11.0"
+  }
+}

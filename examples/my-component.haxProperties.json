@@ -1,0 +1,88 @@
+{
+  "api": "1",
+  "type": "element",
+  "canScale": false,
+  "canEditSource": true,
+  "hideDefaultSettings": true,
+  "designSystem": {
+    "accent": true,
+    "primary": false,
+    "card": true,
+    "text": false,
+    "designTreatment": false
+  },
+  "gizmo": {
+    "title": "My Custom Component",
+    "description": "A custom web component with HAX integration",
+    "icon": "editor:format-quote",
+    "color": "blue",
+    "tags": [
+      "Layout",
+      "content",
+      "custom"
+    ],
+    "meta": {
+      "author": "HAX Developer"
+    }
+  },
+  "settings": {
+    "configure": [
+      {
+        "property": "title",
+        "title": "Title",
+        "description": "The title of the component",
+        "inputMethod": "textfield"
+      },
+      {
+        "property": "color",
+        "title": "Color",
+        "description": "Choose a color theme",
+        "inputMethod": "select",
+        "options": [
+          {
+            "value": "blue",
+            "alt": "Blue"
+          },
+          {
+            "value": "red",
+            "alt": "Red"
+          },
+          {
+            "value": "green",
+            "alt": "Green"
+          }
+        ]
+      },
+      {
+        "property": "visible",
+        "title": "Visible",
+        "description": "Whether the component is visible",
+        "inputMethod": "boolean"
+      }
+    ],
+    "advanced": [
+      {
+        "property": "customCss",
+        "title": "Custom CSS",
+        "description": "Custom CSS for styling",
+        "inputMethod": "code-editor"
+      }
+    ],
+    "developer": []
+  },
+  "saveOptions": {
+    "wipeSlot": false,
+    "unsetAttributes": ["data-temp"]
+  },
+  "demoSchema": [
+    {
+      "tag": "my-component",
+      "properties": {
+        "title": "Demo Component",
+        "color": "blue",
+        "visible": true
+      },
+      "content": "<p>This is demo content for the component</p>"
+    }
+  ]
+}

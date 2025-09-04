@@ -1,0 +1,249 @@
+{
+  "HAXSchema Complete Template": {
+    "prefix": "haxschema",
+    "body": [
+      "{",
+      "  \"api\": \"1\",",
+      "  \"type\": \"${1|element,grid|}\",",
+      "  \"canScale\": ${2|false,true|},",
+      "  \"canEditSource\": ${3|true,false|},",
+      "  \"hideDefaultSettings\": ${4|true,false|},",
+      "  \"designSystem\": {",
+      "    \"accent\": ${5|true,false|},",
+      "    \"primary\": ${6|false,true|},",
+      "    \"card\": ${7|true,false|},",
+      "    \"text\": ${8|false,true|},",
+      "    \"designTreatment\": ${9|false,true|}",
+      "  },",
+      "  \"gizmo\": {",
+      "    \"title\": \"${10:Component Title}\",",
+      "    \"description\": \"${11:Component description for HAX editor}\",",
+      "    \"icon\": \"${12:editor:format-quote}\",",
+      "    \"color\": \"${13|blue,red,green,orange,purple,yellow,pink,grey,black,white|}\",",
+      "    \"tags\": [",
+      "      \"${14:Layout}\",",
+      "      \"${15:content}\"",
+      "    ],",
+      "    \"meta\": {",
+      "      \"author\": \"${16:HAXTheWeb core team}\"",
+      "    }",
+      "  },",
+      "  \"settings\": {",
+      "    \"configure\": [",
+      "      $17",
+      "    ],",
+      "    \"advanced\": [],",
+      "    \"developer\": []",
+      "  },",
+      "  \"saveOptions\": {",
+      "    \"wipeSlot\": ${18|false,true|},",
+      "    \"unsetAttributes\": []",
+      "  },",
+      "  \"demoSchema\": [",
+      "    {",
+      "      \"tag\": \"${19:my-element}\",",
+      "      \"properties\": {",
+      "        \"${20:property}\": \"${21:value}\"",
+      "      },",
+      "      \"content\": \"${22:<p>Demo content</p>}\"",
+      "    }",
+      "  ]",
+      "}"
+    ],
+    "description": "Complete HAXSchema template"
+  },
+  "Gizmo Section": {
+    "prefix": "hax-gizmo",
+    "body": [
+      "\"gizmo\": {",
+      "  \"title\": \"${1:Component Title}\",",
+      "  \"description\": \"${2:Component description}\",",
+      "  \"icon\": \"${3:editor:format-quote}\",",
+      "  \"color\": \"${4|blue,red,green,orange,purple,yellow,pink,grey,black,white|}\",",
+      "  \"tags\": [",
+      "    \"${5:Layout}\",",
+      "    \"${6:content}\"",
+      "  ],",
+      "  \"meta\": {",
+      "    \"author\": \"${7:Author Name}\"",
+      "  }",
+      "}"
+    ],
+    "description": "HAX gizmo metadata section"
+  },
+  "Settings Field - Textfield": {
+    "prefix": "hax-field-text",
+    "body": [
+      "{",
+      "  \"property\": \"${1:propertyName}\",",
+      "  \"title\": \"${2:Field Label}\",",
+      "  \"description\": \"${3:Field description}\",",
+      "  \"inputMethod\": \"textfield\"",
+      "}"
+    ],
+    "description": "HAX settings text field"
+  },
+  "Settings Field - Boolean": {
+    "prefix": "hax-field-bool",
+    "body": [
+      "{",
+      "  \"property\": \"${1:propertyName}\",",
+      "  \"title\": \"${2:Field Label}\",",
+      "  \"description\": \"${3:Field description}\",",
+      "  \"inputMethod\": \"boolean\"",
+      "}"
+    ],
+    "description": "HAX settings boolean field"
+  },
+  "Settings Field - Select": {
+    "prefix": "hax-field-select",
+    "body": [
+      "{",
+      "  \"property\": \"${1:propertyName}\",",
+      "  \"title\": \"${2:Field Label}\",",
+      "  \"description\": \"${3:Field description}\",",
+      "  \"inputMethod\": \"select\",",
+      "  \"options\": [",
+      "    {",
+      "      \"value\": \"${4:option1}\",",
+      "      \"alt\": \"${5:Option 1}\"",
+      "    },",
+      "    {",
+      "      \"value\": \"${6:option2}\",",
+      "      \"alt\": \"${7:Option 2}\"",
+      "    }",
+      "  ]",
+      "}"
+    ],
+    "description": "HAX settings select field with options"
+  },
+  "Settings Field - Number": {
+    "prefix": "hax-field-number",
+    "body": [
+      "{",
+      "  \"property\": \"${1:propertyName}\",",
+      "  \"title\": \"${2:Field Label}\",",
+      "  \"description\": \"${3:Field description}\",",
+      "  \"inputMethod\": \"number\",",
+      "  \"min\": ${4:0},",
+      "  \"max\": ${5:100},",
+      "  \"step\": ${6:1}",
+      "}"
+    ],
+    "description": "HAX settings number field"
+  },
+  "Settings Field - Slider": {
+    "prefix": "hax-field-slider",
+    "body": [
+      "{",
+      "  \"property\": \"${1:propertyName}\",",
+      "  \"title\": \"${2:Field Label}\",",
+      "  \"description\": \"${3:Field description}\",",
+      "  \"inputMethod\": \"slider\",",
+      "  \"min\": ${4:0},",
+      "  \"max\": ${5:100},",
+      "  \"step\": ${6:1}",
+      "}"
+    ],
+    "description": "HAX settings slider field"
+  },
+  "Settings Field - URL": {
+    "prefix": "hax-field-url",
+    "body": [
+      "{",
+      "  \"property\": \"${1:propertyName}\",",
+      "  \"title\": \"${2:Field Label}\",",
+      "  \"description\": \"${3:Field description}\",",
+      "  \"inputMethod\": \"url\",",
+      "  \"validationType\": \"url\"",
+      "}"
+    ],
+    "description": "HAX settings URL field"
+  },
+  "Settings Field - Color Picker": {
+    "prefix": "hax-field-color",
+    "body": [
+      "{",
+      "  \"property\": \"${1:propertyName}\",",
+      "  \"title\": \"${2:Field Label}\",",
+      "  \"description\": \"${3:Field description}\",",
+      "  \"inputMethod\": \"colorpicker\"",
+      "}"
+    ],
+    "description": "HAX settings color picker field"
+  },
+  "Settings Field - Icon Picker": {
+    "prefix": "hax-field-icon",
+    "body": [
+      "{",
+      "  \"property\": \"${1:propertyName}\",",
+      "  \"title\": \"${2:Field Label}\",",
+      "  \"description\": \"${3:Field description}\",",
+      "  \"inputMethod\": \"iconpicker\"",
+      "}"
+    ],
+    "description": "HAX settings icon picker field"
+  },
+  "Settings Field - File Upload": {
+    "prefix": "hax-field-upload",
+    "body": [
+      "{",
+      "  \"property\": \"${1:propertyName}\",",
+      "  \"title\": \"${2:Field Label}\",",
+      "  \"description\": \"${3:Field description}\",",
+      "  \"inputMethod\": \"${4|haxupload,fileupload|}\",",
+      "  \"noVoiceRecord\": ${5|true,false|},",
+      "  \"validationType\": \"url\"",
+      "}"
+    ],
+    "description": "HAX settings file upload field"
+  },
+  "Settings Field - Code Editor": {
+    "prefix": "hax-field-code",
+    "body": [
+      "{",
+      "  \"property\": \"${1:propertyName}\",",
+      "  \"title\": \"${2:Field Label}\",",
+      "  \"description\": \"${3:Field description}\",",
+      "  \"inputMethod\": \"code-editor\"",
+      "}"
+    ],
+    "description": "HAX settings code editor field"
+  },
+  "Demo Schema Entry": {
+    "prefix": "hax-demo",
+    "body": [
+      "{",
+      "  \"tag\": \"${1:my-element}\",",
+      "  \"properties\": {",
+      "    \"${2:property}\": \"${3:value}\"",
+      "  },",
+      "  \"content\": \"${4:<p>Demo content</p>}\"",
+      "}"
+    ],
+    "description": "HAX demo schema entry"
+  },
+  "Design System Configuration": {
+    "prefix": "hax-design-system",
+    "body": [
+      "\"designSystem\": {",
+      "  \"accent\": ${1|true,false|},",
+      "  \"primary\": ${2|false,true|},",
+      "  \"card\": ${3|true,false|},",
+      "  \"text\": ${4|false,true|},",
+      "  \"designTreatment\": ${5|false,true|}",
+      "}"
+    ],
+    "description": "HAX design system configuration"
+  },
+  "Save Options": {
+    "prefix": "hax-save-options",
+    "body": [
+      "\"saveOptions\": {",
+      "  \"wipeSlot\": ${1|false,true|},",
+      "  \"unsetAttributes\": [${2:\"attributeName\"}]",
+      "}"
+    ],
+    "description": "HAX save options configuration"
+  }
+}

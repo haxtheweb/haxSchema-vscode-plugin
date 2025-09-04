@@ -1,0 +1,10 @@
+{
+  "api": "1",
+  "type": "element",
+  "gizmo": {
+    "title": "Test Component",
+    "description": "A test component to verify the extension",
+    "icon": "editor:code",
+    "color": "blue"
+  }
+}

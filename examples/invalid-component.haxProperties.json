@@ -1,0 +1,24 @@
+{
+  "api": "1",
+  "type": "invalid-type",
+  "gizmo": {
+    "title": "Invalid Component",
+    "description": "Missing required icon and color",
+    "tags": []
+  },
+  "settings": {
+    "configure": [
+      {
+        "title": "Invalid Field",
+        "description": "Missing inputMethod and property/attribute/slot",
+        "inputMethod": "select"
+      }
+    ]
+  },
+  "demoSchema": [
+    {
+      "tag": "invalidtag",
+      "properties": {}
+    }
+  ]
+}

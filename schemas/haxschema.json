@@ -1,0 +1,297 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HAXSchema",
+  "description": "Schema for HAX web component properties definition",
+  "type": "object",
+  "required": ["api", "type"],
+  "properties": {
+    "api": {
+      "type": "string",
+      "enum": ["1"],
+      "description": "HAXSchema API version"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["element", "grid"],
+      "description": "Element type - 'element' for block level, 'grid' for containers"
+    },
+    "canScale": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to show the width scaler in HAX editor"
+    },
+    "canEditSource": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to show inline 'view source' button"
+    },
+    "hideDefaultSettings": {
+      "type": "boolean",
+      "default": false,
+      "description": "Hide design system and textual alignment options"
+    },
+    "designSystem": {
+      "type": "object",
+      "description": "Design system form inputs to display",
+      "properties": {
+        "accent": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show accent color picker"
+        },
+        "primary": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show primary color picker"
+        },
+        "card": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show card styling options"
+        },
+        "text": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show text/font options"
+        },
+        "designTreatment": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show special design treatment options"
+        }
+      },
+      "additionalProperties": false
+    },
+    "gizmo": {
+      "type": "object",
+      "description": "Metadata for HAX editor listing and search",
+      "required": ["title", "description", "icon", "color"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Display name in HAX editor",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Description shown in HAX editor",
+          "minLength": 1
+        },
+        "icon": {
+          "type": "string",
+          "description": "Icon identifier (e.g., 'editor:format-quote')",
+          "pattern": "^[a-z-]+:[a-z-]+$"
+        },
+        "color": {
+          "type": "string",
+          "description": "Color for the HAX editor button",
+          "enum": ["red", "orange", "yellow", "green", "blue", "purple", "pink", "grey", "black", "white"]
+        },
+        "tags": {
+          "type": "array",
+          "description": "Tags for search and filtering in HAX",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "meta": {
+          "type": "object",
+          "description": "Additional metadata",
+          "properties": {
+            "author": {
+              "type": "string",
+              "description": "Component author"
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "settings": {
+      "type": "object",
+      "description": "Form fields for element configuration",
+      "properties": {
+        "configure": {
+          "type": "array",
+          "description": "Main configuration fields",
+          "items": {
+            "$ref": "#/definitions/settingsField"
+          }
+        },
+        "advanced": {
+          "type": "array",
+          "description": "Advanced configuration fields",
+          "items": {
+            "$ref": "#/definitions/settingsField"
+          }
+        },
+        "developer": {
+          "type": "array",
+          "description": "Developer configuration fields",
+          "items": {
+            "$ref": "#/definitions/settingsField"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "saveOptions": {
+      "type": "object",
+      "description": "Options for saving/serializing the element",
+      "properties": {
+        "wipeSlot": {
+          "type": "boolean",
+          "default": false,
+          "description": "Remove lightDom content when saving"
+        },
+        "unsetAttributes": {
+          "type": "array",
+          "description": "Attributes to remove before saving",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "demoSchema": {
+      "type": "array",
+      "description": "Array of demo configurations for the element",
+      "items": {
+        "$ref": "#/definitions/demoElement"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "settingsField": {
+      "type": "object",
+      "description": "Configuration field definition",
+      "required": ["inputMethod"],
+      "properties": {
+        "property": {
+          "type": "string",
+          "description": "Property name to bind to",
+          "minLength": 1
+        },
+        "attribute": {
+          "type": "string",
+          "description": "Attribute name to bind to",
+          "minLength": 1
+        },
+        "slot": {
+          "type": "string",
+          "description": "Slot name to bind to"
+        },
+        "title": {
+          "type": "string",
+          "description": "Field label shown to user",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Help text for the field"
+        },
+        "inputMethod": {
+          "type": "string",
+          "enum": [
+            "tabs",
+            "fieldset", 
+            "array",
+            "textfield",
+            "alt",
+            "url",
+            "select",
+            "boolean",
+            "number",
+            "slider",
+            "radio",
+            "colorpicker",
+            "iconpicker",
+            "code-editor",
+            "fileupload",
+            "haxupload"
+          ],
+          "description": "Input control type"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether field is required"
+        },
+        "validation": {
+          "type": "string",
+          "description": "Validation pattern or type"
+        },
+        "validationType": {
+          "type": "string",
+          "enum": ["url", "email", "number", "text"],
+          "description": "Built-in validation type"
+        },
+        "options": {
+          "type": "array",
+          "description": "Options for select/radio inputs",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": ["string", "number", "boolean"],
+                "description": "Option value"
+              },
+              "alt": {
+                "type": "string",
+                "description": "Option display text"
+              }
+            },
+            "required": ["value", "alt"]
+          }
+        },
+        "min": {
+          "type": "number",
+          "description": "Minimum value for number/slider"
+        },
+        "max": {
+          "type": "number",
+          "description": "Maximum value for number/slider"
+        },
+        "step": {
+          "type": "number",
+          "description": "Step value for number/slider"
+        },
+        "noVoiceRecord": {
+          "type": "boolean",
+          "default": false,
+          "description": "Disable voice recording for this field"
+        }
+      },
+      "additionalProperties": false
+    },
+    "demoElement": {
+      "type": "object",
+      "description": "Demo element configuration",
+      "required": ["tag"],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "description": "Web component tag name",
+          "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+        },
+        "properties": {
+          "type": "object",
+          "description": "Properties to set on the element",
+          "additionalProperties": true
+        },
+        "content": {
+          "type": "string",
+          "description": "Inner HTML content for the element"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
