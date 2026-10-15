@@ -1,114 +1,54 @@
-# HAXSchema VSCode Extension
+# HAXSchema for VS Code
 
-A comprehensive Visual Studio Code extension that provides language support, validation, and intelligent autocomplete for HAXSchema `.haxProperties.json` files used in the HAX ecosystem.
+Editing support for HAX `.haxProperties.json` files — the HAXSchema that tells the HAX editor how to list, configure and save a web component.
 
 ## Features
 
-### ✨ Language Support
-- **Syntax Highlighting**: Rich syntax highlighting for HAXSchema JSON files
-- **File Recognition**: Automatic recognition of files matching `*.haxProperties.json`
-- **JSON Schema Validation**: Real-time validation using comprehensive HAXSchema specification
+- **Validation as you type** against a schema built from what HAX actually reads at runtime (`HAXWiring`, `SimpleFields`, `HAXStore` in [haxtheweb/webcomponents](https://github.com/haxtheweb/webcomponents)).
+- **Autocomplete and hover docs** for every key, including all `inputMethod`s, the SimpleColors palette for `gizmo.color`, handle types and DDD `designSystem` options.
+- **Snippets in context**: trigger suggestions (`Ctrl+Space`) on an empty file for a full starter, or inside a `settings.configure` array for field templates (textfield, select, haxupload, array, …).
+- **HAX-specific checks** the schema can't express:
 
-### 🚀 Intelligent Autocomplete
-- **Context-Aware Completions**: Smart autocomplete based on current JSON path and context
-- **Property Suggestions**: Intelligent suggestions for HAXSchema properties
-- **Value Completions**: Predefined value suggestions for enums (colors, input methods, etc.)
-- **Documentation on Hover**: Detailed documentation for properties and values
+  | Code | Severity | Check |
+  |---|---|---|
+  | HAX100 | warning | Field isn't bound to a `property`, `attribute` or `slot` |
+  | HAX101 | warning | `select` / `radio` without `options` |
+  | HAX102 | info | `slider` without `min` / `max` |
+  | HAX103 | warning | Two fields in one list bind the same thing |
+  | HAX104 | warning | `unsetAttributes` entry is camelCase (HAX matches kebab-case attribute names) |
+  | HAX105 | info | No `demoSchema` entry uses the element's own tag |
+  | HAX106 | error | `validation` isn't a valid regular expression |
+  | HAX107 | warning | Likely typo in a field key (e.g. `desc` → `description`) |
+  | HAX108 / HAX109 | warning | `property` written kebab-case / `attribute` written camelCase |
 
-### 🔍 Real-Time Validation
-- **Schema Validation**: Comprehensive validation against HAXSchema specification
-- **Semantic Validation**: Additional validation for HAX-specific patterns
-- **Error Highlighting**: Real-time error detection with precise error locations
-- **Diagnostic Messages**: Clear, actionable error messages with error codes
+- **Retired or misplaced keys** (`canPosition`, `editElement`, `settings.saveOptions`) are flagged with an explanation instead of a bare "not allowed".
+- **Translation files** (`locales/<element>.<lang>.haxProperties.json`) get their own lenient schema, since they only carry translated strings.
+- **Preview demoSchema as HTML** command renders the demos with properties converted to attributes.
 
-### 🛠️ Developer Tools
-- **Snippet Library**: Extensive code snippets for common HAXSchema patterns
-- **Command Palette**: Built-in commands for validation and demo generation
-- **Demo Generation**: Convert demoSchema to HTML preview
+Turn the HAX-specific checks off with `"haxschema.semanticValidation": false`.
 
-## Installation
+## Commands
 
-1. Clone or download this extension to your local machine
-2. Open the extension folder in VSCode
-3. Run `npm install` to install dependencies
-4. Press `F5` to launch the extension development host
-5. Open any `.haxProperties.json` file to see the extension in action
-
-## Usage
-
-### File Recognition
-The extension automatically activates for files matching the pattern `*.haxProperties.json`.
-
-### Autocompletion
-- Type within JSON properties to get contextual suggestions
-- Use `Ctrl+Space` to trigger manual completion
-- Autocomplete includes:
-  - Root-level HAXSchema properties
-  - Nested object properties (gizmo, settings, etc.)
-  - Enum values (colors, input methods, validation types)
-  - Boolean values for configuration options
-
-### Code Snippets
-Type these prefixes and press `Tab` to insert:
-
-- `haxschema` - Complete HAXSchema template
-- `hax-gizmo` - Gizmo metadata section
-- `hax-field-text` - Text field configuration
-- `hax-field-bool` - Boolean field configuration  
-- `hax-field-select` - Select field with options
-- `hax-field-number` - Number field with min/max
-- `hax-field-slider` - Slider field configuration
-- `hax-field-url` - URL field with validation
-- `hax-field-color` - Color picker field
-- `hax-field-icon` - Icon picker field
-- `hax-field-upload` - File upload field
-- `hax-field-code` - Code editor field
-- `hax-demo` - Demo schema entry
-- `hax-design-system` - Design system configuration
-- `hax-save-options` - Save options configuration
-
-### Commands
-
-Access these commands via the Command Palette (`Ctrl+Shift+P`):
-
-- **HAXSchema: Validate File** - Manually validate the current file
-- **HAXSchema: Create Demo** - Generate HTML demo from demoSchema
-
-## HAXSchema Structure
-
-The extension supports the complete HAXSchema specification with intelligent autocomplete for:
-
-### Root Properties
-- `api` - HAXSchema API version (required)
-- `type` - Element type: "element" or "grid" (required)
-- `canScale` - Show width scaler in HAX editor
-- `canEditSource` - Show inline source view button
-- `hideDefaultSettings` - Hide default design options
-- `designSystem` - Design system form inputs
-- `gizmo` - HAX editor metadata
-- `settings` - Form field configurations
-- `saveOptions` - Element serialization options
-- `demoSchema` - Demo configurations
-
-### Input Methods
-Supported input methods for settings fields:
-- `textfield`, `boolean`, `number`, `select`, `radio`, `slider`
-- `url`, `colorpicker`, `iconpicker`, `code-editor`
-- `fileupload`, `haxupload`, `tabs`, `fieldset`, `array`
+- **HAXSchema: Validate File**
+- **HAXSchema: Preview demoSchema as HTML**
 
 ## Development
 
-### Building the Extension
 ```bash
 npm install
-npm run compile
+npm run check     # typecheck + lint + tests
+npm run build     # bundle to dist/extension.js
+npm run package   # build a .vsix
 ```
 
-### Testing
-1. Press `F5` to launch Extension Development Host
-2. Open example files in `examples/` directory
-3. Test autocomplete, validation, and commands
+Press `F5` in VS Code to launch an Extension Development Host with the `examples/` folder open.
+
+The tests validate the schema against real haxProperties files from webcomponents in `test/fixtures/`. When HAX gains a new key or input method, add a fixture that uses it and update `schemas/haxschema.json`.
+
+## Releasing
+
+Bump `version` in `package.json` (and add a CHANGELOG entry) in a PR. When it merges to `main`, the **Release** workflow tags `v<version>`, creates a GitHub release with the `.vsix`, and publishes to the Visual Studio Marketplace and Open VSX. See `.github/workflows/release.yml` for the secrets it needs.
 
 ## License
 
-Apache 2.0 - Part of the HAXTheWeb ecosystem
+Apache-2.0 — part of [HAXTheWeb](https://haxtheweb.org).

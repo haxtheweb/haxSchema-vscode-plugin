@@ -1,234 +1,183 @@
-import Ajv, { JSONSchemaType, ValidateFunction } from 'ajv';
-import * as fs from 'fs';
-import * as path from 'path';
+import { JSONPath } from 'jsonc-parser';
+import schema from '../schemas/haxschema.json';
+import { Finding, isObject, locate, parseDocument, suggest } from './jsonUtil';
 
-interface HAXSchemaValidationError {
-    message: string;
-    path: string;
-    line?: number;
-    column?: number;
+/**
+ * Checks that JSON Schema can't express. Structural validation (types,
+ * enums, required keys) is done by VS Code's JSON language service using
+ * schemas/haxschema.json, so nothing here repeats it.
+ */
+
+const SECTIONS = ['inline', 'configure', 'advanced', 'developer'] as const;
+const FIELD_KEYS = Object.keys(schema.definitions.settingsField.properties);
+const CHOICE_METHODS = new Set(['select', 'radio']);
+const CONTAINER_METHODS = new Set(['tabs', 'collapse', 'fieldset', 'object']);
+
+export const CODES = {
+    missingBinding: 'HAX100',
+    missingOptions: 'HAX101',
+    sliderRange: 'HAX102',
+    duplicateBinding: 'HAX103',
+    unsetAttributeCase: 'HAX104',
+    noOwnDemo: 'HAX105',
+    badRegex: 'HAX106',
+    fieldKeyTypo: 'HAX107',
+    propertyCase: 'HAX108',
+    attributeCase: 'HAX109',
+} as const;
+
+export function isLocaleFile(fileName: string): boolean {
+    return /[\\/]locales[\\/][^\\/]+\.haxProperties\.json$/.test(fileName);
 }
 
-export class HAXSchemaValidator {
-    private ajv: Ajv;
-    private validateFunction: ValidateFunction<any> | null = null;
-    private schema: any;
+export function isHaxPropertiesFile(fileName: string): boolean {
+    return fileName.endsWith('.haxProperties.json');
+}
 
-    constructor() {
-        this.ajv = new Ajv({ 
-            allErrors: true, 
-            verbose: true,
-            strict: false
+/** `foo-bar.haxProperties.json` -> `foo-bar` */
+export function tagFromFileName(fileName: string): string | undefined {
+    const m = /([^\\/]+)\.haxProperties\.json$/.exec(fileName);
+    return m ? m[1] : undefined;
+}
+
+export function validateHaxProperties(text: string, fileName = ''): Finding[] {
+    const { root, value, syntaxErrors } = parseDocument(text);
+    if (syntaxErrors.length) {
+        // VS Code already reports syntax errors for JSON documents
+        return [];
+    }
+    if (!isObject(value) || isLocaleFile(fileName)) {
+        return [];
+    }
+    const out: Finding[] = [];
+    const add = (code: string, severity: Finding['severity'], message: string, path: JSONPath, key = false) => {
+        out.push({ code, severity, message, path, ...locate(root, path, key) });
+    };
+
+    // settings
+    const settings = value.settings;
+    if (isObject(settings)) {
+        for (const section of SECTIONS) {
+            const list = settings[section];
+            if (Array.isArray(list)) {
+                checkFieldList(list, ['settings', section], add);
+            }
+        }
+    }
+
+    // saveOptions.unsetAttributes are HTML attribute names
+    const save = value.saveOptions;
+    if (isObject(save) && Array.isArray(save.unsetAttributes)) {
+        save.unsetAttributes.forEach((attr, i) => {
+            if (typeof attr === 'string' && /[A-Z]/.test(attr)) {
+                add(CODES.unsetAttributeCase, 'warning',
+                    `unsetAttributes takes HTML attribute names. Did you mean "${kebab(attr)}"?`,
+                    ['saveOptions', 'unsetAttributes', i]);
+            }
         });
-        this.loadSchema();
     }
 
-    private loadSchema() {
-        try {
-            // Load the schema from the schemas directory
-            const schemaPath = path.join(__dirname, '..', 'schemas', 'haxschema.json');
-            this.schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-            this.validateFunction = this.ajv.compile(this.schema);
-        } catch (error) {
-            console.error('Failed to load HAXSchema:', error);
-        }
-    }
-
-    validate(jsonContent: string): HAXSchemaValidationError[] {
-        const errors: HAXSchemaValidationError[] = [];
-
-        if (!this.validateFunction) {
-            errors.push({
-                message: 'Schema validation not available',
-                path: '',
-                line: 0,
-                column: 0
-            });
-            return errors;
-        }
-
-        try {
-            const data = JSON.parse(jsonContent);
-            const valid = this.validateFunction(data);
-
-            if (!valid && this.validateFunction.errors) {
-                for (const error of this.validateFunction.errors) {
-                    const position = this.findPositionInJson(jsonContent, error.instancePath || '');
-                    errors.push({
-                        message: this.formatErrorMessage(error),
-                        path: error.instancePath || 'root',
-                        line: position.line,
-                        column: position.column
-                    });
-                }
+    // demoSchema
+    const demos = value.demoSchema;
+    const ownTag = tagFromFileName(fileName);
+    if (Array.isArray(demos)) {
+        let sawOwn = false;
+        demos.forEach((demo) => {
+            if (!isObject(demo) || typeof demo.tag !== 'string') {
+                return;
             }
-
-            // Additional semantic validation
-            errors.push(...this.performSemanticValidation(data, jsonContent));
-
-        } catch (parseError) {
-            const syntaxError = this.parseSyntaxError(parseError as Error, jsonContent);
-            errors.push(syntaxError);
-        }
-
-        return errors;
-    }
-
-    private formatErrorMessage(error: any): string {
-        const { keyword, message, params } = error;
-        
-        switch (keyword) {
-            case 'required':
-                return `Missing required property: ${params.missingProperty}`;
-            case 'enum':
-                return `Invalid value. Allowed values: ${params.allowedValues.join(', ')}`;
-            case 'type':
-                return `Expected ${params.type} but got ${typeof error.data}`;
-            case 'pattern':
-                return `String does not match required pattern: ${params.pattern}`;
-            case 'minLength':
-                return `String is too short (minimum length: ${params.limit})`;
-            case 'maxLength':
-                return `String is too long (maximum length: ${params.limit})`;
-            case 'minimum':
-                return `Number is too small (minimum: ${params.limit})`;
-            case 'maximum':
-                return `Number is too large (maximum: ${params.limit})`;
-            default:
-                return message || 'Validation error';
+            if (demo.tag === ownTag) {
+                sawOwn = true;
+            }
+        });
+        if (ownTag && demos.length > 0 && !sawOwn && ownTag.includes('-')) {
+            add(CODES.noOwnDemo, 'info',
+                `No demoSchema entry uses <${ownTag}>. HAX inserts the first demo, so it usually should.`,
+                ['demoSchema'], true);
         }
     }
+    return out;
+}
 
-    private findPositionInJson(jsonContent: string, instancePath: string): { line: number; column: number } {
-        const lines = jsonContent.split('\n');
-        
-        if (!instancePath || instancePath === '') {
-            return { line: 0, column: 0 };
+type Add = (code: string, severity: Finding['severity'], message: string, path: JSONPath, key?: boolean) => void;
+
+function checkFieldList(list: unknown[], base: JSONPath, add: Add): void {
+    const seen = new Map<string, number>();
+    list.forEach((field, i) => {
+        if (!isObject(field)) {
+            return;
+        }
+        const path = [...base, i];
+        const method = typeof field.inputMethod === 'string' ? field.inputMethod : 'textfield';
+        const hasBinding = 'property' in field || 'attribute' in field || 'slot' in field;
+
+        if (!hasBinding && !CONTAINER_METHODS.has(method)) {
+            add(CODES.missingBinding, 'warning',
+                'Field is not bound to anything. Add "property", "attribute" or "slot".', path);
         }
 
-        // Convert JSON path to property search
-        const pathParts = instancePath.replace(/^\//, '').split('/');
-        let currentLine = 0;
-
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            
-            // Look for the property in the current path
-            if (pathParts.length > 0) {
-                const currentProperty = pathParts[pathParts.length - 1];
-                if (line.includes(`"${currentProperty}"`)) {
-                    return { line: i, column: line.indexOf(`"${currentProperty}"`) };
-                }
+        const binding = 'property' in field ? `property:${String(field.property)}`
+            : 'attribute' in field ? `attribute:${String(field.attribute)}`
+                : 'slot' in field ? `slot:${String(field.slot)}` : undefined;
+        if (binding) {
+            const first = seen.get(binding);
+            if (first !== undefined) {
+                const [kind, name] = binding.split(/:(.*)/s);
+                add(CODES.duplicateBinding, 'warning',
+                    `${kind} "${name}" is already bound by field ${first} in this list.`,
+                    [...path, kind], true);
+            } else {
+                seen.set(binding, i);
             }
         }
 
-        return { line: 0, column: 0 };
-    }
-
-    private parseSyntaxError(error: Error, jsonContent: string): HAXSchemaValidationError {
-        const message = error.message;
-        let line = 0;
-        let column = 0;
-
-        // Try to extract line and column from JSON syntax error
-        const positionMatch = message.match(/position (\d+)/);
-        if (positionMatch) {
-            const position = parseInt(positionMatch[1], 10);
-            const lines = jsonContent.substring(0, position).split('\n');
-            line = lines.length - 1;
-            column = lines[lines.length - 1].length;
+        if (typeof field.property === 'string' && field.property.includes('-')) {
+            add(CODES.propertyCase, 'warning',
+                `"property" is the camelCase JS name. Use "${camel(field.property)}", or bind with "attribute": "${field.property}".`,
+                [...path, 'property']);
+        }
+        if (typeof field.attribute === 'string' && /[A-Z]/.test(field.attribute)) {
+            add(CODES.attributeCase, 'warning',
+                `"attribute" is the kebab-case HTML name. Use "${kebab(field.attribute)}", or bind with "property": "${field.attribute}".`,
+                [...path, 'attribute']);
         }
 
-        return {
-            message: `JSON Syntax Error: ${message}`,
-            path: 'root',
-            line,
-            column
-        };
-    }
-
-    private performSemanticValidation(data: any, jsonContent: string): HAXSchemaValidationError[] {
-        const errors: HAXSchemaValidationError[] = [];
-
-        // Validate gizmo icon format
-        if (data.gizmo && data.gizmo.icon) {
-            const icon = data.gizmo.icon;
-            if (typeof icon === 'string' && !icon.includes(':')) {
-                const position = this.findPositionInJson(jsonContent, '/gizmo/icon');
-                errors.push({
-                    message: 'Icon should be in format "namespace:icon-name" (e.g., "editor:format-quote")',
-                    path: '/gizmo/icon',
-                    line: position.line,
-                    column: position.column
-                });
+        if (CHOICE_METHODS.has(method) && !('options' in field) && !('itemsList' in field)) {
+            add(CODES.missingOptions, 'warning',
+                `${method} needs "options" to choose from.`, [...path, 'inputMethod']);
+        }
+        if (method === 'slider' && (field.min === undefined || field.max === undefined)) {
+            add(CODES.sliderRange, 'info',
+                'Slider has no "min"/"max"; it will use the control defaults.', [...path, 'inputMethod']);
+        }
+        if (typeof field.validation === 'string') {
+            try {
+                new RegExp(field.validation);
+            } catch (e) {
+                add(CODES.badRegex, 'error',
+                    `"validation" is not a valid regular expression: ${(e as Error).message}`,
+                    [...path, 'validation']);
             }
         }
-
-        // Validate demo schema tag names
-        if (data.demoSchema && Array.isArray(data.demoSchema)) {
-            data.demoSchema.forEach((demo: any, index: number) => {
-                if (demo.tag && typeof demo.tag === 'string') {
-                    if (!demo.tag.includes('-')) {
-                        const position = this.findPositionInJson(jsonContent, `/demoSchema/${index}/tag`);
-                        errors.push({
-                            message: 'Web component tag names must contain at least one hyphen',
-                            path: `/demoSchema/${index}/tag`,
-                            line: position.line,
-                            column: position.column
-                        });
-                    }
+        for (const key of Object.keys(field)) {
+            if (!FIELD_KEYS.includes(key)) {
+                const guess = suggest(key, FIELD_KEYS);
+                if (guess) {
+                    add(CODES.fieldKeyTypo, 'warning',
+                        `Unknown field key "${key}". Did you mean "${guess}"?`, [...path, key], true);
                 }
-            });
+            }
         }
-
-        // Validate settings field configurations
-        if (data.settings) {
-            ['configure', 'advanced', 'developer'].forEach(section => {
-                if (data.settings[section] && Array.isArray(data.settings[section])) {
-                    data.settings[section].forEach((field: any, index: number) => {
-                        // Check that field has either property, attribute, or slot
-                        if (!field.property && !field.attribute && !field.slot) {
-                            const position = this.findPositionInJson(jsonContent, `/settings/${section}/${index}`);
-                            errors.push({
-                                message: 'Settings field must have either "property", "attribute", or "slot"',
-                                path: `/settings/${section}/${index}`,
-                                line: position.line,
-                                column: position.column
-                            });
-                        }
-
-                        // Validate select/radio fields have options
-                        if (['select', 'radio'].includes(field.inputMethod) && !field.options) {
-                            const position = this.findPositionInJson(jsonContent, `/settings/${section}/${index}/inputMethod`);
-                            errors.push({
-                                message: `${field.inputMethod} input method requires "options" property`,
-                                path: `/settings/${section}/${index}/inputMethod`,
-                                line: position.line,
-                                column: position.column
-                            });
-                        }
-
-                        // Validate slider/number fields have min/max when appropriate
-                        if (['slider'].includes(field.inputMethod)) {
-                            if (field.min === undefined || field.max === undefined) {
-                                const position = this.findPositionInJson(jsonContent, `/settings/${section}/${index}/inputMethod`);
-                                errors.push({
-                                    message: 'Slider input method should have "min" and "max" properties',
-                                    path: `/settings/${section}/${index}/inputMethod`,
-                                    line: position.line,
-                                    column: position.column
-                                });
-                            }
-                        }
-                    });
-                }
-            });
+        if (Array.isArray(field.properties)) {
+            checkFieldList(field.properties, [...path, 'properties'], add);
         }
+    });
+}
 
-        return errors;
-    }
+function kebab(s: string): string {
+    return s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').replace(/_/g, '-').toLowerCase();
+}
 
-    isHAXSchemaFile(fileName: string): boolean {
-        return fileName.endsWith('.haxProperties.json');
-    }
+function camel(s: string): string {
+    return s.replace(/-([a-z0-9])/g, (_, c: string) => c.toUpperCase());
 }

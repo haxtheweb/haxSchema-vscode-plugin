@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/haxtheweb/haxSchema-vscode-plugin/schemas/haxschema-locale.json",
+  "title": "HAXSchema locale overlay",
+  "description": "A translation file (locales/<element>.<lang>.haxProperties.json). It only carries translated strings; HAX merges it onto the base haxProperties by position, so every key is optional.",
+  "type": "object",
+  "properties": {
+    "gizmo": {
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "settings": {
+      "type": "object",
+      "properties": {
+        "inline": { "$ref": "#/definitions/fieldList" },
+        "configure": { "$ref": "#/definitions/fieldList" },
+        "advanced": { "$ref": "#/definitions/fieldList" },
+        "developer": { "$ref": "#/definitions/fieldList" }
+      },
+      "additionalProperties": false
+    },
+    "demoSchema": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "properties": { "type": "object" },
+          "content": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "fieldList": {
+      "type": "array",
+      "description": "Entries line up by index with the base file's fields.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "options": { "type": ["object", "array"] },
+          "itemsList": { "type": "array" },
+          "properties": { "$ref": "#/definitions/fieldList" }
+        }
+      }
+    }
+  }
+}

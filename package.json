@@ -1,103 +1,117 @@
 {
   "name": "haxschema",
-  "displayName": "HAXSchema Language Support",
-  "description": "Language support, validation, and autocomplete for HAXSchema .haxProperties.json files",
-  "version": "1.0.0",
+  "displayName": "HAXSchema",
+  "description": "Validation, autocomplete, hover docs and snippets for HAX .haxProperties.json files",
+  "version": "2.0.0",
   "publisher": "haxtheweb",
+  "license": "Apache-2.0",
   "icon": "images/hax-icon.png",
+  "homepage": "https://haxtheweb.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/haxtheweb/haxSchema-vscode-plugin.git"
   },
+  "bugs": {
+    "url": "https://github.com/haxtheweb/issues/issues"
+  },
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.82.0"
   },
   "categories": [
-    "Programming Languages",
     "Linters",
-    "Snippets"
+    "Snippets",
+    "Other"
   ],
   "keywords": [
     "hax",
+    "haxtheweb",
     "haxschema",
-    "webcomponents",
-    "json",
-    "schema",
-    "validation"
+    "haxProperties",
+    "web components",
+    "json schema"
   ],
   "activationEvents": [
-    "onLanguage:haxschema",
+    "onLanguage:json",
     "workspaceContains:**/*.haxProperties.json"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "contributes": {
-    "languages": [
-      {
-        "id": "haxschema",
-        "aliases": [
-          "HAXSchema",
-          "haxschema"
-        ],
-        "extensions": [
-          ".haxProperties.json"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "haxschema",
-        "scopeName": "source.haxschema",
-        "path": "./syntaxes/haxschema.tmLanguage.json"
-      }
-    ],
     "jsonValidation": [
       {
-        "fileMatch": "*.haxProperties.json",
+        "fileMatch": [
+          "*.haxProperties.json",
+          "!**/locales/*.haxProperties.json"
+        ],
         "url": "./schemas/haxschema.json"
-      }
-    ],
-    "snippets": [
+      },
       {
-        "language": "haxschema",
-        "path": "./snippets/haxschema.json"
+        "fileMatch": "**/locales/*.haxProperties.json",
+        "url": "./schemas/haxschema-locale.json"
       }
     ],
+    "configuration": {
+      "title": "HAXSchema",
+      "properties": {
+        "haxschema.semanticValidation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Run HAX-specific checks (bindings, options, demo tags, …) on top of JSON schema validation."
+        }
+      }
+    },
     "commands": [
       {
         "command": "haxschema.validateFile",
-        "title": "Validate HAXSchema File",
+        "title": "Validate File",
         "category": "HAXSchema"
       },
       {
         "command": "haxschema.createDemo",
-        "title": "Create Demo Schema",
+        "title": "Preview demoSchema as HTML",
         "category": "HAXSchema"
       }
-    ]
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "haxschema.validateFile",
+          "when": "resourceFilename =~ /\\.haxProperties\\.json$/"
+        },
+        {
+          "command": "haxschema.createDemo",
+          "when": "resourceFilename =~ /\\.haxProperties\\.json$/"
+        }
+      ]
+    }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "vscode:prepublish": "npm run build",
+    "build": "esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node18 --external:vscode --main-fields=module,main --outfile=dist/extension.js --minify",
+    "watch": "npm run build -- --sourcemap --watch",
+    "typecheck": "tsc -p . --noEmit",
+    "lint": "eslint src test --ext ts",
+    "pretest": "npm run build && tsc -p tsconfig.test.json",
+    "test": "mocha --ui tdd \"out/test/**/*.test.js\"",
+    "check": "npm run typecheck && npm run lint && npm test",
+    "package": "vsce package --no-dependencies"
   },
   "devDependencies": {
-    "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
-    "@types/node": "16.x",
-    "@types/vscode": "^1.60.0",
-    "@typescript-eslint/eslint-plugin": "^5.31.0",
-    "@typescript-eslint/parser": "^5.31.0",
-    "@vscode/test-electron": "^2.5.2",
-    "eslint": "^8.20.0",
+    "@types/node": "^20.17.0",
+    "@types/vscode": "~1.82.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@vscode/vsce": "^3.2.2",
+    "ajv": "^8.17.1",
+    "esbuild": "^0.25.0",
+    "eslint": "^8.57.1",
     "glob": "^11.0.3",
     "mocha": "^11.7.2",
-    "typescript": "^4.7.4"
+    "ovsx": "^0.10.1",
+    "typescript": "^5.6.3",
+    "vscode-json-languageservice": "^5.7.2"
   },
   "dependencies": {
-    "ajv": "^8.11.0"
+    "jsonc-parser": "^3.3.1"
   }
 }
