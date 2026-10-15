@@ -114,7 +114,7 @@
       "description": "Skip the settings HAX adds to every element (design system, alignment, developer fields)."
     },
     "designSystem": {
-      "description": "Which DDD design-system controls HAX adds for this element. `false` disables them.",
+      "description": "Which DDD design-system controls HAX adds for this element. `true` turns them all on, `false` turns them off, or pick them individually.",
       "default": {
         "primary": false,
         "accent": false,
@@ -124,10 +124,7 @@
       },
       "oneOf": [
         {
-          "type": "boolean",
-          "enum": [
-            false
-          ]
+          "type": "boolean"
         },
         {
           "type": "object",
