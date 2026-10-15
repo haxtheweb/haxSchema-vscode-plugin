@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.1
+
+- Accept `designSystem: true` (DDD turns on every design-system control), which 2.0.0 rejected.
+
 ## 2.0.0
 
 Rebuilt against the current HAXSchema as implemented in haxtheweb/webcomponents.

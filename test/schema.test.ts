@@ -29,6 +29,11 @@ suite('haxschema.json', () => {
         });
     }
 
+    test('accepts designSystem true / false', () => {
+        assert.ok(base({ designSystem: true }), errorsOf(base));
+        assert.ok(base({ designSystem: false }), errorsOf(base));
+    });
+
     test('accepts an empty object (HAXWiring fills defaults)', () => {
         assert.ok(base({}), errorsOf(base));
     });

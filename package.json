@@ -2,7 +2,7 @@
   "name": "haxschema",
   "displayName": "HAXSchema",
   "description": "Validation, autocomplete, hover docs and snippets for HAX .haxProperties.json files",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publisher": "haxtheweb",
   "license": "Apache-2.0",
   "icon": "images/hax-icon.png",
