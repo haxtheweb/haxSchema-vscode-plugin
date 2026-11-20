@@ -4,6 +4,9 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    # weekly, to catch webcomponents changes between releases of this extension
+    - cron: '17 9 * * 1'
 
 permissions:
   contents: read
@@ -26,3 +29,28 @@ jobs:
           name: vsix
           path: extension.vsix
           retention-days: 14
+
+  webcomponents:
+    # Schema drift: validate every haxProperties file and input method in
+    # haxtheweb/webcomponents master against this extension's schema.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: haxtheweb/webcomponents
+          ref: master
+          path: webcomponents
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /elements/*/lib/*.haxProperties.json
+            /elements/hax-body-behaviors/lib/HAXFields.js
+            /elements/simple-fields/simple-fields.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+        env:
+          WEBCOMPONENTS_DIR: ${{ github.workspace }}/webcomponents

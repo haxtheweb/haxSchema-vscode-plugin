@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0
+
+Caught up with webcomponents master ([haxtheweb/issues#3392](https://github.com/haxtheweb/issues/issues/3392)); `video-player`, `audio-player` and `ddd-hero` no longer show false errors.
+
+- Accept `designSystem.textAlign` (`false` hides the Text align setting, for blocks with a fixed layout such as media players).
+- New input methods: `image-framing` (with its `sourceProperty`, `focalXProperty` and `focalYProperty` keys), `doodle` and `haxcms-language-picker`.
+- CI validates every haxProperties file and input method in webcomponents master, on each PR and weekly, so the schema can't fall behind unnoticed.
+
 ## 2.0.1
 
 - Accept `designSystem: true` (DDD turns on every design-system control), which 2.0.0 rejected.

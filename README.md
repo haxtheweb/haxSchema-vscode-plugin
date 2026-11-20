@@ -45,6 +45,12 @@ Press `F5` in VS Code to launch an Extension Development Host with the `examples
 
 The tests validate the schema against real haxProperties files from webcomponents in `test/fixtures/`. When HAX gains a new key or input method, add a fixture that uses it and update `schemas/haxschema.json`.
 
+CI also checks out [haxtheweb/webcomponents](https://github.com/haxtheweb/webcomponents) master (on every PR and weekly) and validates every `elements/*/lib/*.haxProperties.json` in it, plus the input methods registered in `HAXFields.js` and `simple-fields.js`. To run that locally, point `WEBCOMPONENTS_DIR` at a webcomponents checkout:
+
+```bash
+WEBCOMPONENTS_DIR=../webcomponents npm test
+```
+
 ## Releasing
 
 Bump `version` in `package.json` (and add a CHANGELOG entry) in a PR. When it merges to `main`, the **Release** workflow tags `v<version>`, creates a GitHub release with the `.vsix`, and publishes to the Visual Studio Marketplace and Open VSX. See `.github/workflows/release.yml` for the secrets it needs.

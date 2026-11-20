@@ -153,6 +153,11 @@
               "type": "boolean",
               "default": false,
               "description": "Special design treatment controls (data-design-treatment)."
+            },
+            "textAlign": {
+              "type": "boolean",
+              "default": true,
+              "description": "Text align setting (data-text-align). On unless set to false; set false for blocks with a fixed layout, such as media players. Content that already has data-text-align keeps it."
             }
           },
           "additionalProperties": false
@@ -598,6 +603,8 @@
         "haxupload",
         "fileupload",
         "srcset",
+        "image-framing",
+        "doodle",
         "screenRecorder",
         "datepicker",
         "date-time",
@@ -611,7 +618,8 @@
         "collapse",
         "combo",
         "hax-palette-picker",
-        "haxcms-theme-picker"
+        "haxcms-theme-picker",
+        "haxcms-language-picker"
       ]
     },
     "fieldList": {
@@ -846,6 +854,18 @@
         "itemLabel": {
           "type": "string",
           "description": "Nested property used to label each array item."
+        },
+        "sourceProperty": {
+          "type": "string",
+          "description": "image-framing: the element property that holds the photo being framed."
+        },
+        "focalXProperty": {
+          "type": "string",
+          "description": "image-framing: the element property that stores the horizontal focal point."
+        },
+        "focalYProperty": {
+          "type": "string",
+          "description": "image-framing: the element property that stores the vertical focal point."
         },
         "hideReorder": {
           "type": "boolean"
