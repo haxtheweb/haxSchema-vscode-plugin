@@ -15,6 +15,11 @@ const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
 const schemaUri = (rel: string) => `ext://haxschema/${rel.replace(/^\.\//, '')}`;
 
 const ls = getLanguageService({
+    // VS Code resolves a relative $ref (haxschema-docs.json -> haxschema.json)
+    // against the address of the schema that holds it
+    workspaceContext: {
+        resolveRelativePath: (relativePath, resource) => new URL(relativePath, resource).toString(),
+    },
     schemaRequestService: async (uri) => fs.readFileSync(path.join(root, uri.replace('ext://haxschema/', '')), 'utf8'),
 });
 ls.configure({
@@ -45,6 +50,35 @@ suite('VS Code JSON language service', () => {
         const text = '{ "demoSchema": [ { "properties": { "title": "Hola" } } ] }';
         assert.strictEqual((await diagnose('file:///ws/el/locales/my-el.es.haxProperties.json', text)).length, 0);
         assert.ok((await diagnose('file:///ws/el/lib/my-el.haxProperties.json', text)).length > 0, 'base schema requires demo tag');
+    });
+
+    for (const file of globSync('test/fixtures/docs/*.docs.json', { cwd: root })) {
+        test(`no diagnostics for ${path.basename(file)}`, async () => {
+            const diags = await diagnose(`file:///ws/elements/x/lib/${path.basename(file)}`, fs.readFileSync(path.join(root, file), 'utf8'));
+            assert.deepStrictEqual(diags.map((x) => x.message), []);
+        });
+    }
+
+    test('docs data: embedded haxProperties are checked through the $ref', async () => {
+        const data = JSON.parse(fs.readFileSync(path.join(root, 'test/fixtures/docs/meme-maker.docs.json'), 'utf8'));
+        data.hax.settings.configure[0].inputMethod = 'textbox';
+        data.events.push(null);
+        const diags = await diagnose('file:///ws/elements/meme-maker/lib/meme-maker.docs.json', JSON.stringify(data, null, 2));
+        assert.strictEqual(diags.length, 2, diags.map((x) => x.message).join('\n'));
+    });
+
+    test('docs data: only lib/<tag>.docs.json gets the schema', async () => {
+        assert.ok((await diagnose('file:///ws/elements/my-el/lib/my-el.docs.json', '{}')).length > 0);
+        assert.strictEqual((await diagnose('file:///ws/api.docs.json', '{}')).length, 0);
+        assert.strictEqual((await diagnose('file:///ws/elements/my-el/lib/my-el.haxProperties.json', '{ "tag": "my-el" }').then((d) => d.length)), 1,
+            'haxProperties files keep the haxProperties schema');
+    });
+
+    test('docs data: hover documents keys', async () => {
+        const text = '{ "surfaceHash": "0123456789ab" }';
+        const d = doc('file:///ws/elements/my-el/lib/my-el.docs.json', text);
+        const hover = await ls.doHover(d, d.positionAt(4), ls.parseJSONDocument(d));
+        assert.match(JSON.stringify(hover?.contents), /Fingerprint/);
     });
 
     test('unrelated JSON files are untouched', async () => {

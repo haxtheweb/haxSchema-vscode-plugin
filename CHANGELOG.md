@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.2.0
+
+- New schema for element docs data, `lib/<tag>.docs.json`, the file an element's build writes for `<documentation-player>` and the component gallery ([haxtheweb/issues#3392](https://github.com/haxtheweb/issues/issues/3392)): validation and hover docs for every key, with the embedded haxProperties checked by the haxProperties schema.
+- CI validates every docs data file in webcomponents master alongside the haxProperties files.
+
 ## 2.1.0
 
 Caught up with webcomponents master ([haxtheweb/issues#3392](https://github.com/haxtheweb/issues/issues/3392)); `video-player`, `audio-player` and `ddd-hero` no longer show false errors.

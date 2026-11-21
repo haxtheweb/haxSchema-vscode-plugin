@@ -1,6 +1,6 @@
 # HAXSchema for VS Code
 
-Editing support for HAX `.haxProperties.json` files — the HAXSchema that tells the HAX editor how to list, configure and save a web component.
+Editing support for HAX `.haxProperties.json` files — the HAXSchema that tells the HAX editor how to list, configure and save a web component — and for the `lib/<tag>.docs.json` docs data that `<documentation-player>` reads.
 
 ## Features
 
@@ -23,6 +23,7 @@ Editing support for HAX `.haxProperties.json` files — the HAXSchema that tells
 
 - **Retired or misplaced keys** (`canPosition`, `editElement`, `settings.saveOptions`) are flagged with an explanation instead of a bare "not allowed".
 - **Translation files** (`locales/<element>.<lang>.haxProperties.json`) get their own lenient schema, since they only carry translated strings.
+- **Docs data** (`lib/<tag>.docs.json`, written by an element's build for `<documentation-player>` and the component gallery) is validated too, with hover docs for every key. The haxProperties embedded under `hax` are checked with the same schema as a `.haxProperties.json` file. These files are generated: when one shows an error, fix the element or its haxProperties and rebuild it.
 - **Preview demoSchema as HTML** command renders the demos with properties converted to attributes.
 
 Turn the HAX-specific checks off with `"haxschema.semanticValidation": false`.
@@ -43,9 +44,9 @@ npm run package   # build a .vsix
 
 Press `F5` in VS Code to launch an Extension Development Host with the `examples/` folder open.
 
-The tests validate the schema against real haxProperties files from webcomponents in `test/fixtures/`. When HAX gains a new key or input method, add a fixture that uses it and update `schemas/haxschema.json`.
+The tests validate the schemas against real haxProperties and docs data files from webcomponents in `test/fixtures/`. When HAX gains a new key or input method, add a fixture that uses it and update `schemas/haxschema.json`. When `scripts/extract-element-docs.mjs` in webcomponents writes a new key, update `schemas/haxschema-docs.json` the same way.
 
-CI also checks out [haxtheweb/webcomponents](https://github.com/haxtheweb/webcomponents) master (on every PR and weekly) and validates every `elements/*/lib/*.haxProperties.json` in it, plus the input methods registered in `HAXFields.js` and `simple-fields.js`. To run that locally, point `WEBCOMPONENTS_DIR` at a webcomponents checkout:
+CI also checks out [haxtheweb/webcomponents](https://github.com/haxtheweb/webcomponents) master (on every PR and weekly) and validates every `elements/*/lib/*.haxProperties.json` and `elements/*/lib/*.docs.json` in it, plus the input methods registered in `HAXFields.js` and `simple-fields.js`. To run that locally, point `WEBCOMPONENTS_DIR` at a webcomponents checkout:
 
 ```bash
 WEBCOMPONENTS_DIR=../webcomponents npm test

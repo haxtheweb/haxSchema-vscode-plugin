@@ -31,8 +31,9 @@ jobs:
           retention-days: 14
 
   webcomponents:
-    # Schema drift: validate every haxProperties file and input method in
-    # haxtheweb/webcomponents master against this extension's schema.
+    # Schema drift: validate every haxProperties file, docs data file and
+    # input method in haxtheweb/webcomponents master against this
+    # extension's schemas.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,6 +45,7 @@ jobs:
           sparse-checkout-cone-mode: false
           sparse-checkout: |
             /elements/*/lib/*.haxProperties.json
+            /elements/*/lib/*.docs.json
             /elements/hax-body-behaviors/lib/HAXFields.js
             /elements/simple-fields/simple-fields.js
       - uses: actions/setup-node@v4
