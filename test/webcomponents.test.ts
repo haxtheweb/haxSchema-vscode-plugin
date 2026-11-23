@@ -14,10 +14,29 @@ import { validateHaxProperties } from '../src/validator';
  * - every elements/<name>/lib/<name>.haxProperties.json passes the schema
  *   and has no error-level HAX check
  * - every input method HAXFields / SimpleFields define is in the schema enum
+ * - every elements/<name>/lib/<tag>.docs.json passes the docs data schema
  */
 const wc = process.env.WEBCOMPONENTS_DIR;
 const root = path.resolve(__dirname, '..', '..');
 const schema = JSON.parse(fs.readFileSync(path.join(root, 'schemas/haxschema.json'), 'utf8'));
+const docsSchema = JSON.parse(fs.readFileSync(path.join(root, 'schemas/haxschema-docs.json'), 'utf8'));
+
+/**
+ * Docs data files in webcomponents master with a known defect: an event the
+ * element names with a template literal (`${prop}-changed`) comes out of
+ * scripts/extract-element-docs.mjs as null. The schema keeps rejecting that;
+ * these files may fail for that reason only, and pass once it is fixed there.
+ */
+const DOCS_WITH_UNNAMED_EVENT = [
+    'a11y-media-player',
+    'i18n-manager',
+    'map-menu',
+    'play-list',
+    'promise-progress',
+    'simple-autocomplete',
+    'simple-fields',
+    'simple-login',
+];
 
 /**
  * Keys of each object literal opened by a line that is exactly
@@ -107,6 +126,23 @@ suite('inputMethodKeys', () => {
             assert.ok(base(JSON.parse(text)), JSON.stringify(base.errors, null, 2));
             const errors = validateHaxProperties(text, file).filter((f) => f.severity === 'error');
             assert.deepStrictEqual(errors, []);
+        });
+    }
+
+    const docs = ajv.compile(docsSchema);
+    const docsFiles = globSync('elements/*/lib/*.docs.json', { cwd: dir });
+    test('finds docs data files', () => {
+        assert.ok(docsFiles.length > 0, `none under ${dir}`);
+    });
+    for (const file of docsFiles) {
+        test(`accepts ${file}`, () => {
+            const data = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+            if (docs(data)) {
+                return;
+            }
+            const known = DOCS_WITH_UNNAMED_EVENT.includes(path.basename(file, '.docs.json'));
+            const other = (docs.errors ?? []).filter((e) => !(known && /^\/events\/\d+$/.test(e.instancePath)));
+            assert.deepStrictEqual(other, []);
         });
     }
 });

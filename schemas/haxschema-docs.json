@@ -1,0 +1,304 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/haxtheweb/haxSchema-vscode-plugin/schemas/haxschema-docs.json",
+  "title": "HAX element docs data",
+  "description": "Docs data for one element (lib/<tag>.docs.json), read by <documentation-player> and the component gallery. The element's build writes it with scripts/extract-element-docs.mjs in haxtheweb/webcomponents: change the element or its haxProperties and rebuild instead of editing this file by hand.",
+  "type": "object",
+  "properties": {
+    "tag": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "description": "The element's tag name. Packages without an element (utils) use their folder name."
+    },
+    "folder": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Folder under elements/ in haxtheweb/webcomponents."
+    },
+    "package": {
+      "type": "string",
+      "minLength": 1,
+      "description": "npm package name, e.g. @haxtheweb/meme-maker."
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Package version the data was built from."
+    },
+    "license": {
+      "type": "string",
+      "description": "Package license (SPDX id)."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "gizmo.title from haxProperties, or the tag."
+    },
+    "description": {
+      "type": "string",
+      "description": "gizmo.description, the package description, or the first sentence of the class doc comment."
+    },
+    "icon": {
+      "type": "string",
+      "description": "gizmo.icon, or \"\"."
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "gizmo.tags."
+    },
+    "haxCapable": {
+      "type": "boolean",
+      "description": "Whether the element has a HAX gizmo, so it can be inserted in the HAX editor."
+    },
+    "import": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Module specifier for the JS import snippet: <package>/<main file>."
+    },
+    "cdn": {
+      "type": "string",
+      "pattern": "^https://",
+      "description": "CDN address of the element's module, for the script snippet and the live demo."
+    },
+    "install": {
+      "type": "string",
+      "minLength": 1,
+      "description": "npm install command."
+    },
+    "demoHtml": {
+      "type": "string",
+      "description": "Demo markup built from haxProperties demoSchema. \"\" when there is none."
+    },
+    "attributes": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/attribute" },
+      "description": "Attributes and properties, from the custom elements manifest."
+    },
+    "slots": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "description": "Slot names; the unnamed slot is \"(default)\"."
+    },
+    "events": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "description": "Names of the events the element fires."
+    },
+    "hax": {
+      "$ref": "haxschema.json",
+      "description": "The element's haxProperties (shown in the Schema tab). {} when it has none."
+    },
+    "surfaceHash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{12}$",
+      "description": "Fingerprint of what a person can see and use: attributes, HAX settings, slots, events and demo schema. A walkthrough stores the hash it was written for, so a changed element marks it stale."
+    },
+    "walkthroughs": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/walkthrough" },
+      "description": "Walkthrough storyboards (lib/<tag>[.<topic>].motion.json), the main one first."
+    },
+    "videos": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/video" },
+      "description": "Video tutorials (lib/<tag>[.<topic>].video.json), keyed by the same topics as walkthroughs."
+    },
+    "motion": {
+      "type": "object",
+      "description": "The first walkthrough, for readers that show only one.",
+      "properties": {
+        "file": {
+          "type": "string",
+          "pattern": "^(lib/.+\\.motion\\.json)?$",
+          "description": "Storyboard path inside the package, or \"\" when there is none."
+        },
+        "status": {
+          "enum": ["none", "stale", "awaiting", "reviewed"],
+          "description": "\"none\" when the element has no walkthrough; otherwise that walkthrough's status."
+        }
+      },
+      "required": ["file", "status"],
+      "additionalProperties": false
+    },
+    "video": {
+      "description": "The first video tutorial, or null.",
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/definitions/video" }
+      ]
+    },
+    "source": {
+      "type": "object",
+      "description": "Where the element lives in haxtheweb/webcomponents.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^elements/[^/]+$",
+          "description": "Element folder, from the repository root."
+        },
+        "file": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Main module, inside that folder."
+        }
+      },
+      "required": ["path", "file"],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "tag",
+    "folder",
+    "package",
+    "version",
+    "license",
+    "title",
+    "description",
+    "icon",
+    "tags",
+    "haxCapable",
+    "import",
+    "cdn",
+    "install",
+    "demoHtml",
+    "attributes",
+    "slots",
+    "events",
+    "hax",
+    "surfaceHash",
+    "walkthroughs",
+    "videos",
+    "motion",
+    "video",
+    "source"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "attribute": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Attribute name."
+        },
+        "property": {
+          "type": "string",
+          "description": "Property the attribute maps to. Left out when the manifest names none."
+        },
+        "type": {
+          "type": "string",
+          "description": "Type as written in the manifest (string, boolean, …), or \"\"."
+        },
+        "default": {
+          "type": "string",
+          "description": "Default value as source text (\"false\", \"\\\"left\\\"\"), or \"\"."
+        },
+        "description": {
+          "type": "string"
+        },
+        "hax": {
+          "description": "The HAX setting bound to this property, or null when HAX has no control for it.",
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "The setting's title. Missing when the haxProperties field has no title."
+                },
+                "input": {
+                  "$ref": "haxschema.json#/definitions/inputMethod"
+                },
+                "options": {
+                  "type": ["object", "array", "null"],
+                  "description": "The setting's options (select / radio), or null."
+                }
+              },
+              "required": ["options"],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": ["name", "type", "default", "description", "hax"],
+      "additionalProperties": false
+    },
+    "walkthrough": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^([a-z0-9][a-z0-9-]*)?$",
+          "description": "Topic id; \"\" is the main walkthrough."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Name in the topic picker: the storyboard's title, or one made from the topic id."
+        },
+        "order": {
+          "type": "number",
+          "description": "Position in the topic picker (main 0, topics 100 unless the storyboard sets it)."
+        },
+        "src": {
+          "type": "string",
+          "pattern": "^[^/]+\\.motion\\.json$",
+          "description": "Storyboard file name, next to this file."
+        },
+        "file": {
+          "type": "string",
+          "pattern": "^lib/[^/]+\\.motion\\.json$",
+          "description": "Storyboard path inside the package."
+        },
+        "status": {
+          "enum": ["stale", "awaiting", "reviewed"],
+          "enumDescriptions": [
+            "Written for a different surface hash; the element changed since.",
+            "Matches the element, not yet approved by a person.",
+            "Matches the element and a person approved it."
+          ],
+          "description": "Review state of the storyboard against surfaceHash."
+        }
+      },
+      "required": ["id", "title", "order", "src", "file", "status"],
+      "additionalProperties": false
+    },
+    "video": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^([a-z0-9][a-z0-9-]*)?$",
+          "description": "Topic id; \"\" is the main video."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Video address (YouTube or a media file)."
+        },
+        "captions": {
+          "type": "string",
+          "description": "WebVTT captions, relative to this file, or \"\"."
+        },
+        "tutorial": {
+          "type": "string",
+          "description": "Link to the full tutorial, or \"\"."
+        },
+        "order": {
+          "type": "number"
+        }
+      },
+      "required": ["id", "title", "source", "captions", "tutorial", "order"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -14,6 +14,9 @@ const read = (p: string) => JSON.parse(fs.readFileSync(path.join(root, p), 'utf8
 const ajv = new Ajv({ allErrors: true, strict: false });
 const base = ajv.compile(read('schemas/haxschema.json'));
 const locale = ajv.compile(read('schemas/haxschema-locale.json'));
+// the docs schema points at haxschema.json for the embedded haxProperties;
+// ajv finds it by $id because `base` was compiled on this instance
+const docs = ajv.compile(read('schemas/haxschema-docs.json'));
 
 const errorsOf = (fn: typeof base) => JSON.stringify(fn.errors, null, 2);
 
@@ -60,6 +63,49 @@ suite('haxschema-locale.json', () => {
             assert.ok(locale(read(file)), errorsOf(locale));
         });
     }
+});
+
+suite('haxschema-docs.json', () => {
+    for (const file of globSync('test/fixtures/docs/*.docs.json', { cwd: root })) {
+        test(`accepts ${path.basename(file)}`, () => {
+            assert.ok(docs(read(file)), errorsOf(docs));
+        });
+    }
+
+    const sample = () => read('test/fixtures/docs/meme-maker.docs.json');
+    const video = { id: '', title: 'Meme maker', source: 'https://www.youtube.com/watch?v=x', captions: 'meme-maker.captions.vtt', tutorial: '', order: 0 };
+
+    test('accepts video tutorials', () => {
+        const withVideo = { ...sample(), videos: [video, { ...video, id: 'add-text', order: 100 }], video };
+        assert.ok(docs(withVideo), errorsOf(docs));
+    });
+
+    test('accepts a reviewed walkthrough', () => {
+        const d = sample();
+        d.walkthroughs[0].status = 'reviewed';
+        d.motion.status = 'reviewed';
+        assert.ok(docs(d), errorsOf(docs));
+    });
+
+    const reject = (name: string, change: (d: ReturnType<typeof sample>) => void, where: string) => test(name, () => {
+        const d = sample();
+        change(d);
+        assert.ok(!docs(d));
+        assert.ok(docs.errors?.some((e) => e.instancePath === where), errorsOf(docs));
+    });
+    reject('rejects a missing key', (d) => { delete d.surfaceHash; }, '');
+    reject('rejects an unknown key', (d) => { d.demo = ''; }, '');
+    reject('rejects an event without a name', (d) => { d.events.push(null); }, `/events/${sample().events.length}`);
+    reject('rejects a malformed surface hash', (d) => { d.surfaceHash = 'abc'; }, '/surfaceHash');
+    reject('rejects an unknown walkthrough status', (d) => { d.walkthroughs[0].status = 'approved'; }, '/walkthroughs/0/status');
+    reject('rejects "none" on a walkthrough', (d) => { d.walkthroughs[0].status = 'none'; }, '/walkthroughs/0/status');
+    reject('rejects a storyboard outside lib/', (d) => { d.walkthroughs[0].file = 'meme-maker.motion.json'; }, '/walkthroughs/0/file');
+    reject('rejects a video without a source', (d) => { d.videos = [{ ...video, source: '' }]; }, '/videos/0/source');
+    reject('rejects an attribute without a name', (d) => { delete d.attributes[0].name; }, '/attributes/0');
+    reject('rejects an unknown HAX input on an attribute', (d) => {
+        d.attributes.find((a: { hax: unknown }) => a.hax).hax.input = 'textbox';
+    }, `/attributes/${sample().attributes.findIndex((a: { hax: unknown }) => a.hax)}/hax/input`);
+    reject('checks the embedded haxProperties with the haxProperties schema', (d) => { d.hax.type = 'block'; }, '/hax/type');
 });
 
 suite('manifest', () => {
